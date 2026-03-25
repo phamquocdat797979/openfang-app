@@ -289,10 +289,18 @@ function getSkillNames(ids) {
 // ===== RENDER AGENTS =====
 function renderAgentsList() {
   const section = document.getElementById('yourAgentsSection');
+  const emptyState = document.getElementById('chatEmptyState');
   const list = document.getElementById('agentsList');
   if (!section || !list) return;
-  if (state.agents.length === 0) { section.style.display = 'none'; return; }
+
+  if (state.agents.length === 0) {
+    section.style.display = 'none';
+    if (emptyState) emptyState.style.display = 'flex';
+    return;
+  }
   section.style.display = 'block';
+  if (emptyState) emptyState.style.display = 'none';
+
   list.innerHTML = state.agents.map(agent => `
     <div class="agent-item" onclick="openChatWithAgent('${agent.id}')">
       <div class="agent-avatar">${agent.name.charAt(0).toUpperCase()}</div>
