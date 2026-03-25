@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenFang — Agent Operating System</title>
+  <meta name="description" content="OpenFang is an open-source Agent Operating System. Create, manage and chat with autonomous AI agents powered by skills." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">OPENFANG</span>
+        <span class="logo-version">v0.4.9</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" title="Settings" id="globalSettingsBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        </button>
+        <button class="icon-btn" title="Refresh">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="agent-status-bar">
+      <div class="status-dot running"></div>
+      <span class="status-text" id="agentStatusText">0 agent(s) running</span>
+      <span class="status-badge http">HTTP</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-section-label">CHAT</span>
+        <a class="nav-item active" id="nav-chat" onclick="navigateTo('chat')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chat
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <span class="nav-section-label">MONITOR</span>
+        <a class="nav-item" id="nav-overview" onclick="navigateTo('overview')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </a>
+        <a class="nav-item" id="nav-analytics" onclick="navigateTo('analytics')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Analytics
+        </a>
+        <a class="nav-item" id="nav-logs" onclick="navigateTo('logs')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Logs
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <span class="nav-section-label">AGENTS</span>
+        <a class="nav-item" id="nav-sessions" onclick="navigateTo('sessions')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+          Sessions
+        </a>
+        <a class="nav-item" id="nav-approvals" onclick="navigateTo('approvals')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Approvals
+        </a>
+        <a class="nav-item" id="nav-comms" onclick="navigateTo('comms')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.11 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 1.24h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
+          Comms
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <span class="nav-section-label">AUTOMATION</span>
+        <a class="nav-item" id="nav-workflows" onclick="navigateTo('workflows')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 2H8l-2 5h12z"/></svg>
+          Workflows
+        </a>
+        <a class="nav-item" id="nav-scheduler" onclick="navigateTo('scheduler')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Scheduler
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <span class="nav-section-label">EXTENSIONS</span>
+        <a class="nav-item" id="nav-channels" onclick="navigateTo('channels')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          Channels
+        </a>
+        <a class="nav-item" id="nav-skills" onclick="navigateTo('skills')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Skills
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="footer-hint">Ctrl+E agents | Ctrl+N new</span>
+    </div>
+
+    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleSidebar()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+
+    <!-- ===== CHAT PAGE ===== -->
+    <div class="page active" id="page-chat">
+      <div class="page-header">
+        <h1 class="page-title">Chat</h1>
+        <button class="btn btn-primary" id="newAgentBtn" onclick="openNewAgentModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + New Agent
+        </button>
+      </div>
+
+      <section class="your-agents-section" id="yourAgentsSection" style="display:none;">
+        <h2 class="section-title">YOUR AGENTS</h2>
+        <div class="agents-list" id="agentsList"></div>
+      </section>
+
+      <section class="start-agent-section">
+        <h2 class="section-title">OR START A NEW AGENT</h2>
+        <div class="template-grid">
+          <div class="template-card" onclick="openNewAgentModalWithTemplate('General Assistant','GENERAL','A versatile conversational agent that can help with general tasks, answer questions, and provide recommendations.')">
+            <div class="template-header">
+              <span class="template-name">General Assistant</span>
+              <span class="template-tag general">GENERAL</span>
+            </div>
+            <p class="template-desc">A versatile conversational agent that can help with general tasks, answer questions, and provide recommendations.</p>
+          </div>
+          <div class="template-card" onclick="openNewAgentModalWithTemplate('Code Helper','DEVELOPMENT','A programming-focused agent that writes, reviews, and debugs code across multiple languages.')">
+            <div class="template-header">
+              <span class="template-name">Code Helper</span>
+              <span class="template-tag development">DEVELOPMENT</span>
+            </div>
+            <p class="template-desc">A programming-focused agent that writes, reviews, and debugs code across multiple languages.</p>
+          </div>
+          <div class="template-card" onclick="openNewAgentModalWithTemplate('Researcher','RESEARCH','An analytical agent that breaks down complex topics, synthesizes information, and provides cited summaries.')">
+            <div class="template-header">
+              <span class="template-name">Researcher</span>
+              <span class="template-tag research">RESEARCH</span>
+            </div>
+            <p class="template-desc">An analytical agent that breaks down complex topics, synthesizes information, and provides cited summaries.</p>
+          </div>
+          <div class="template-card" onclick="openNewAgentModalWithTemplate('Writer','WRITING','A creative writing agent that helps with drafting, editing, and improving written content of all kinds.')">
+            <div class="template-header">
+              <span class="template-name">Writer</span>
+              <span class="template-tag writing">WRITING</span>
+            </div>
+            <p class="template-desc">A creative writing agent that helps with drafting, editing, and improving written content of all kinds.</p>
+          </div>
+          <div class="template-card" onclick="openNewAgentModalWithTemplate('Data Analyst','DEVELOPMENT','A data-focused agent that helps analyze datasets, create queries, and interpret statistical results.')">
+            <div class="template-header">
+              <span class="template-name">Data Analyst</span>
+              <span class="template-tag development">DEVELOPMENT</span>
+            </div>
+            <p class="template-desc">A data-focused agent that helps analyze datasets, create queries, and interpret statistical results.</p>
+          </div>
+          <div class="template-card" onclick="openNewAgentModalWithTemplate('Customer Support','BUSINESS','A professional, empathetic agent for handling customer inquiries and resolving issues.')">
+            <div class="template-header">
+              <span class="template-name">Customer Support</span>
+              <span class="template-tag business">BUSINESS</span>
+            </div>
+            <p class="template-desc">A professional, empathetic agent for handling customer inquiries and resolving issues.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== CHAT WINDOW PAGE ===== -->
+    <div class="page" id="page-chatwindow">
+      <div class="chat-window-header">
+        <button class="back-btn" onclick="navigateTo('chat')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="chat-agent-info">
+          <div class="chat-agent-avatar" id="chatAgentAvatar">A</div>
+          <div>
+            <div class="chat-agent-name" id="chatAgentName">Agent</div>
+            <div class="chat-agent-skills" id="chatAgentSkills"></div>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <span class="agent-running-badge">
+            <span class="status-dot running small"></span> running
+          </span>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <textarea class="chat-input" id="chatInput" placeholder="Gửi tin nhắn..." rows="1" onkeydown="handleChatKeydown(event)"></textarea>
+          <button class="chat-send-btn" id="chatSendBtn" onclick="sendMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+        <div class="chat-hint">Nhấn Enter để gửi, Shift+Enter để xuống dòng</div>
+      </div>
+    </div>
+
+    <!-- ===== SKILLS PAGE ===== -->
+    <div class="page" id="page-skills">
+      <div class="page-header">
+        <h1 class="page-title">Skills</h1>
+        <button class="btn btn-primary" onclick="openNewSkillModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          + New Skill
+        </button>
+      </div>
+      <div class="skills-grid" id="skillsGrid"></div>
+    </div>
+
+    <!-- ===== OVERVIEW PAGE ===== -->
+    <div class="page" id="page-overview">
+      <div class="page-header"><h1 class="page-title">Overview</h1></div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg></div>
+          <div class="stat-info"><span class="stat-label">Total Agents</span><span class="stat-value" id="statAgents">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="stat-info"><span class="stat-label">Total Skills</span><span class="stat-value" id="statSkills">3</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="stat-info"><span class="stat-label">Messages</span><span class="stat-value" id="statMessages">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="stat-info"><span class="stat-label">Uptime</span><span class="stat-value" id="statUptime">00:00:00</span></div>
+        </div>
+      </div>
+      <div class="overview-agents">
+        <h2 class="section-title">ACTIVE AGENTS</h2>
+        <div id="overviewAgentList" class="overview-agent-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== SESSIONS PAGE ===== -->
+    <div class="page" id="page-sessions">
+      <div class="page-header"><h1 class="page-title">Sessions</h1></div>
+      <div class="sessions-list" id="sessionsList"></div>
+    </div>
+
+    <!-- ===== LOGS PAGE ===== -->
+    <div class="page" id="page-logs">
+      <div class="page-header"><h1 class="page-title">Logs</h1></div>
+      <div class="logs-container" id="logsContainer"></div>
+    </div>
+
+    <!-- ===== OTHER PAGES ===== -->
+    <div class="page" id="page-analytics">
+      <div class="page-header"><h1 class="page-title">Analytics</h1></div>
+      <div class="placeholder-content"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><p>Analytics dashboard coming soon</p></div>
+    </div>
+    <div class="page" id="page-approvals">
+      <div class="page-header"><h1 class="page-title">Approvals</h1></div>
+      <div class="placeholder-content"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><p>No pending approvals</p></div>
+    </div>
+    <div class="page" id="page-comms">
+      <div class="page-header"><h1 class="page-title">Comms</h1></div>
+      <div class="placeholder-content"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2"/></svg><p>No communications configured</p></div>
+    </div>
+    <div class="page" id="page-workflows">
+      <div class="page-header"><h1 class="page-title">Workflows</h1></div>
+      <div class="placeholder-content"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/></svg><p>No workflows configured</p></div>
+    </div>
+    <div class="page" id="page-scheduler">
+      <div class="page-header"><h1 class="page-title">Scheduler</h1></div>
+      <div class="placeholder-content"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>No scheduled tasks</p></div>
+    </div>
+    <div class="page" id="page-channels">
+      <div class="page-header"><h1 class="page-title">Channels</h1></div>
+      <div class="placeholder-content"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg><p>No channels connected</p></div>
+    </div>
+  </main>
+
+  <!-- ===== NEW AGENT MODAL ===== -->
+  <div class="modal-overlay" id="newAgentModal">
+    <div class="modal" id="newAgentModalBox">
+      <div class="modal-header">
+        <h2 class="modal-title">Tạo Agent Mới</h2>
+        <button class="modal-close" onclick="closeModal('newAgentModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tên Agent <span class="required">*</span></label>
+          <input type="text" class="form-input" id="agentNameInput" placeholder="Nhập tên agent..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô hình LLM</label>
+          <select class="form-select" id="agentModelSelect">
+            <option value="gemini-2.5-flash">gemini-2.5-flash ⭐ (Recommended)</option>
+            <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Fastest)</option>
+            <option value="gemini-2.5-pro">gemini-2.5-pro (Most Capable)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Danh mục</label>
+          <select class="form-select" id="agentCategorySelect">
+            <option value="GENERAL">GENERAL</option>
+            <option value="DEVELOPMENT">DEVELOPMENT</option>
+            <option value="RESEARCH">RESEARCH</option>
+            <option value="WRITING">WRITING</option>
+            <option value="BUSINESS">BUSINESS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả</label>
+          <textarea class="form-textarea" id="agentDescInput" placeholder="Mô tả ngắn về agent..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Skills <span class="required">*</span>
+            <span class="label-hint">(Bắt buộc chọn ít nhất 1 skill)</span>
+          </label>
+          <div class="skills-selector" id="skillsSelector"></div>
+          <div class="skills-error" id="skillsError" style="display:none;">
+            ⚠️ Vui lòng chọn ít nhất một skill cho agent.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('newAgentModal')">Hủy</button>
+        <button class="btn btn-primary" onclick="createAgent()">Tạo Agent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NEW SKILL MODAL ===== -->
+  <div class="modal-overlay" id="newSkillModal">
+    <div class="modal" id="newSkillModalBox">
+      <div class="modal-header">
+        <h2 class="modal-title">Thêm Skill Mới</h2>
+        <button class="modal-close" onclick="closeModal('newSkillModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Tên Skill <span class="required">*</span></label>
+          <input type="text" class="form-input" id="skillNameInput" placeholder="Nhập tên skill..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả <span class="required">*</span></label>
+          <textarea class="form-textarea" id="skillDescInput" placeholder="Mô tả skill này làm gì..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Danh mục</label>
+          <select class="form-select" id="skillCategoryInput">
+            <option value="MATH">MATH</option>
+            <option value="TEXT">TEXT</option>
+            <option value="AI">AI</option>
+            <option value="UTILITY">UTILITY</option>
+            <option value="CUSTOM">CUSTOM</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ví dụ sử dụng</label>
+          <input type="text" class="form-input" id="skillExampleInput" placeholder="Ví dụ: 'nhân đôi 5' → '10'" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('newSkillModal')">Hủy</button>
+        <button class="btn btn-primary" onclick="createSkill()">Thêm Skill</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AGENT DETAIL MODAL ===== -->
+  <div class="modal-overlay" id="agentDetailModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 class="modal-title" id="agentDetailTitle">Agent Detail</h2>
+        <button class="modal-close" onclick="closeModal('agentDetailModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="agentDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('agentDetailModal')">Đóng</button>
+        <button class="btn btn-danger" id="deleteAgentBtn" onclick="deleteCurrentAgent()">Xóa Agent</button>
+        <button class="btn btn-primary" id="chatWithAgentBtn" onclick="openChatWithCurrentAgent()">Mở Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
