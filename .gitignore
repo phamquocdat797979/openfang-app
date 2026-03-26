@@ -1,8 +1,21 @@
 # Dependencies
 node_modules/
 
-# Environment variables (QUAN TRỌNG: không commit lên GitHub!)
+# Environment variables
 .env
+
+# SQLite database files (stays on server only)
+*.db
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
