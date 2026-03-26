@@ -4,8 +4,8 @@
   "description": "OpenFang Agent Operating System - Web App",
   "main": "server.js",
   "scripts": {
-    "start": "node --no-warnings server.js",
-    "dev": "node --no-warnings --watch server.js"
+    "start": "node --experimental-sqlite --no-warnings server.js",
+    "dev": "node --experimental-sqlite --no-warnings --watch server.js"
   },
   "engines": {
     "node": ">=22.5.0"
