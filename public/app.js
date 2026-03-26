@@ -172,7 +172,7 @@ function renderSkillsPage() {
   const grid = document.getElementById('skillsGrid');
   if (!grid) return;
   grid.innerHTML = state.skills.map(skill => `
-    <div class="skill-card">
+    <div class="skill-card" onclick="openSkillDetail('${skill.id}')" style="cursor:pointer">
       <div class="skill-card-header">
         <div class="skill-icon ${skill.category.toLowerCase()}">${skill.icon || '⚡'}</div>
         <span class="skill-badge">${skill.category}</span>
@@ -218,6 +218,8 @@ function openNewSkillModal() {
   document.getElementById('skillNameInput').value = '';
   document.getElementById('skillDescInput').value = '';
   document.getElementById('skillExampleInput').value = '';
+  document.getElementById('skillPromptInput').value = '';
+  document.getElementById('skillTriggersInput').value = '';
   openModal('newSkillModal');
 }
 
@@ -226,14 +228,20 @@ async function createSkill() {
   const desc = document.getElementById('skillDescInput').value.trim();
   const category = document.getElementById('skillCategoryInput').value;
   const example = document.getElementById('skillExampleInput').value.trim();
+  const prompt = document.getElementById('skillPromptInput').value.trim();
+  const triggersText = document.getElementById('skillTriggersInput').value.trim();
+
   if (!name) { showToast('Vui lòng nhập tên skill!', 'error'); return; }
   if (!desc) { showToast('Vui lòng nhập mô tả skill!', 'error'); return; }
+
+  const triggersArr = triggersText ? triggersText.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const finalPrompt = prompt || `Skill của bạn: ${name}. Nhiệm vụ: ${desc}. Hãy thực hiện chính xác nhiệm vụ này dựa trên dữ liệu người dùng cung cấp.`;
 
   const icons = { MATH: '🔢', TEXT: '📄', AI: '🤖', UTILITY: '⚙️', CUSTOM: '✨' };
   const newSkill = {
     id: `skill_${Date.now()}`, name, category, desc,
     example: example || '', icon: icons[category] || '⚡',
-    systemInstruction: `Skill: ${name}. ${desc}`, triggers: [],
+    systemInstruction: finalPrompt, triggers: triggersArr,
   };
 
   try {
@@ -245,6 +253,60 @@ async function createSkill() {
     addLog('success', 'Skills', `Skill mới: "${name}"`);
   } catch (err) {
     showToast(`Lỗi lưu skill: ${err.message}`, 'error');
+  }
+}
+
+// ===== SKILL DETAIL & DELETE =====
+function openSkillDetail(skillId) {
+  const skill = state.skills.find(s => s.id === skillId);
+  if (!skill) return;
+
+  document.getElementById('skillDetailTitle').textContent = `Skill: ${skill.name}`;
+  document.getElementById('deleteSkillBtn').dataset.skillId = skillId;
+  document.getElementById('deleteSkillBtn').style.display = skill.builtin ? 'none' : 'block';
+
+  document.getElementById('skillDetailBody').innerHTML = `
+    <div class="agent-detail-grid">
+      <div class="detail-field"><div class="detail-field-label">TÊN SKILL</div><div class="detail-field-value">${skill.name}</div></div>
+      <div class="detail-field"><div class="detail-field-label">DANH MỤC</div><div class="detail-field-value">${skill.category}</div></div>
+      <div class="detail-field" style="grid-column:1/-1"><div class="detail-field-label">MÔ TẢ</div><div class="detail-field-value">${skill.desc}</div></div>
+      ${skill.example ? `<div class="detail-field" style="grid-column:1/-1"><div class="detail-field-label">VÍ DỤ</div><div class="detail-field-value" style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">${skill.example}</div></div>` : ''}
+    </div>
+    
+    <div class="memory-section">
+      <div class="section-title" style="color:#4F8EF7">MÃ KỊCH BẢN (SYSTEM INSTRUCTION)</div>
+      <div class="memory-entry" style="font-family:var(--font-mono); white-space:pre-wrap; border-color:#4F8EF7; background:rgba(79,142,247,0.05)">${skill.systemInstruction}</div>
+    </div>
+
+    ${skill.triggers && skill.triggers.length > 0 ? `
+    <div class="detail-skills-section">
+      <div class="section-title">TỪ KHÓA KÍCH HOẠT (TRIGGERS)</div>
+      <div class="detail-skills-list">${skill.triggers.map(t => `<span class="detail-skill-tag">${t}</span>`).join('')}</div>
+    </div>` : ''}
+  `;
+  openModal('skillDetailModal');
+}
+
+async function deleteCurrentSkill() {
+  const skillId = document.getElementById('deleteSkillBtn').dataset.skillId;
+  const skill = state.skills.find(s => s.id === skillId);
+  if (!skill || skill.builtin) return;
+
+  if (confirm(`Bạn có chắc chắn muốn xóa skill "${skill.name}"?`)) {
+    try {
+      await apiDelete(`/api/skills/${skillId}`);
+      state.skills = state.skills.filter(s => s.id !== skillId);
+      // Xóa skill id ra khỏi các agent đang dùng nó
+      state.agents.forEach(a => {
+        a.skillIds = a.skillIds.filter(id => id !== skillId);
+      });
+      addLog('warn', 'Skills', `Đã xóa skill: "${skill.name}"`);
+      renderSkillsPage(); renderSkillsSelector(); updateOverviewPage();
+      closeModal('skillDetailModal');
+      showToast(`Skill "${skill.name}" đã bị xóa.`, 'info');
+    } catch (err) {
+      showToast(`Lỗi xóa skill: ${err.message}`, 'error');
+    }
   }
 }
 

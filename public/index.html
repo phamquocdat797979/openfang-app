@@ -288,6 +288,20 @@
           <label class="form-label">Ví dụ sử dụng</label>
           <input type="text" class="form-input" id="skillExampleInput" placeholder="Ví dụ: 'nhân đôi 5' → '10'" />
         </div>
+        <div class="form-group">
+          <label class="form-label">
+            Mã kịch bản (System Instruction)
+            <span class="label-hint">(Prompt cốt lõi giúp Agent thực thi)</span>
+          </label>
+          <textarea class="form-textarea" style="font-family:var(--font-mono);font-size:12px;height:120px;" id="skillPromptInput" placeholder="VD: Tìm kiếm số liệu trong câu chát, tiến hành nhân lên 2 lần và trả về kết quả..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Triggers (Từ khóa kích hoạt)
+            <span class="label-hint">(Phân cách bằng dấu phẩy)</span>
+          </label>
+          <input type="text" class="form-input" id="skillTriggersInput" placeholder="Ví dụ: nhân đôi, tính toán, x2" />
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeModal('newSkillModal')">Hủy</button>
@@ -310,6 +324,23 @@
         <button class="btn btn-ghost" onclick="closeModal('agentDetailModal')">Đóng</button>
         <button class="btn btn-danger" id="deleteAgentBtn" onclick="deleteCurrentAgent()">Xóa Agent</button>
         <button class="btn btn-primary" id="chatWithAgentBtn" onclick="openChatWithCurrentAgent()">Mở Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SKILL DETAIL MODAL ===== -->
+  <div class="modal-overlay" id="skillDetailModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 class="modal-title" id="skillDetailTitle">Skill Detail</h2>
+        <button class="modal-close" onclick="closeModal('skillDetailModal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="skillDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('skillDetailModal')">Đóng</button>
+        <button class="btn btn-danger" id="deleteSkillBtn" onclick="deleteCurrentSkill()">Xóa Skill</button>
       </div>
     </div>
   </div>

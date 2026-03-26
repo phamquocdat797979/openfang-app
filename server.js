@@ -63,6 +63,24 @@ app.post('/api/skills', (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+app.delete('/api/skills/:id', (req, res) => {
+  try {
+    const info = db.prepare('DELETE FROM skills WHERE id = ? AND builtin = 0').run(req.params.id);
+    if (info.changes === 0) return res.status(403).json({ error: 'Không thể xóa skill hệ thống hoặc skill không tồn tại.' });
+    
+    const agents = db.prepare('SELECT id, skill_ids FROM agents').all();
+    const updateAgent = db.prepare('UPDATE agents SET skill_ids = ? WHERE id = ?');
+    for (const a of agents) {
+      let ids = JSON.parse(a.skill_ids || '[]');
+      if (ids.includes(req.params.id)) {
+        ids = ids.filter(i => i !== req.params.id);
+        updateAgent.run(JSON.stringify(ids), a.id);
+      }
+    }
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ===========================
 // AGENTS API
 // ===========================
