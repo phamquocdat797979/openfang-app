@@ -117,12 +117,12 @@ app.post('/api/agents/:id/messages', (req, res) => {
     const { messages } = req.body;
     const insert = db.prepare(`INSERT INTO messages (agent_id, role, content, used_skill, timestamp)
                                VALUES (?, ?, ?, ?, ?)`);
-    const insertMany = db.transaction((msgs) => {
-      for (const m of msgs) {
-        insert.run(req.params.id, m.role, m.content, m.usedSkill || null, m.timestamp);
-      }
-    });
-    insertMany(Array.isArray(messages) ? messages : [messages]);
+    const msgs = Array.isArray(messages) ? messages : [messages];
+    db.exec('BEGIN TRANSACTION');
+    for (const m of msgs) {
+      insert.run(req.params.id, m.role, m.content, m.usedSkill || null, m.timestamp);
+    }
+    db.exec('COMMIT');
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
