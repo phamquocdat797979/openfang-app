@@ -68,12 +68,13 @@ function buildAgentSystemPrompt(agent, sharedMemoryContext) {
   const memoryText = sharedMemoryContext.length > 0
     ? `\n\n=== SHARED MEMORY (Hoạt động từ các agent khác) ===\n` +
       sharedMemoryContext.slice(-15).map(m => {
-        const time = new Date(m.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-        return `[${time}] ${m.agentName}: ${m.content}`;
+        const d = new Date(m.timestamp);
+        const timeStr = `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ${d.toLocaleDateString('vi-VN')}`;
+        return `[${timeStr}] ${m.agentName}: ${m.content}`;
       }).join('\n')
     : '';
 
-  return `Bạn là ${agent.name}, một AI agent chuyên biệt trong hệ thống OpenFang.
+  return `Bạn là ${agent.name}, một AI agent chuyên biệt trong hệ thống OpenFang. Hôm nay là ngày ${new Date().toLocaleDateString('vi-VN')}.
 
 === SKILLS CỦA BẠN (CHỈ được thực hiện các tác vụ này) ===
 ${skillsText}
@@ -675,7 +676,8 @@ function showAgentMemory(agentId) {
   }
   
   container.innerHTML = [...mems].reverse().map(m => {
-    const time = new Date(m.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const d = new Date(m.timestamp);
+    const time = `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} ${d.toLocaleDateString('vi-VN')}`;
     let typeColor = m.type === 'agent_created' ? 'var(--accent)' :
                     m.type === 'skill_used' ? '#4F8EF7' : 
                     m.type === 'request_refused' ? '#F39C12' : '#8b91a8';
