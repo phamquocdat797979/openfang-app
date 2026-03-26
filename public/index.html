@@ -302,10 +302,22 @@
           </label>
           <input type="text" class="form-input" id="skillTriggersInput" placeholder="Ví dụ: nhân đôi, tính toán, x2" />
         </div>
+
+        <hr style="border:0;border-top:1px solid var(--border);margin:20px 0;">
+        
+        <div class="form-group">
+          <label class="form-label" style="color:var(--accent);">🧪 BẮT BUỘC: Test thử Skill trước khi tạo</label>
+          <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Bạn cần nhập một câu lệnh thử nghiệm (ví dụ như đóng vai khách user) và đợi AI trả lời đúng ý bạn thì nút Tạo mới được mở.</p>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="form-input" id="skillTestMessage" style="flex:1" placeholder="Nhập câu chat để test skill..." />
+            <button class="btn btn-secondary" style="background:var(--bg-hover);border:1px solid var(--border);color:var(--text-primary)" onclick="runSkillTest()">▶ Run Test</button>
+          </div>
+          <div id="skillTestResult" style="margin-top:10px;padding:12px;background:var(--bg-tertiary);border-radius:var(--radius);font-size:12px;color:var(--text-secondary);display:none;white-space:pre-wrap;border:1px solid var(--border)"></div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeModal('newSkillModal')">Hủy</button>
-        <button class="btn btn-primary" onclick="createSkill()">Thêm Skill</button>
+        <button class="btn btn-primary" id="createSkillBtn" disabled style="opacity:0.5;cursor:not-allowed;" onclick="createSkill()">Thêm Skill</button>
       </div>
     </div>
   </div>

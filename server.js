@@ -20,18 +20,62 @@ app.post('/api/gemini', async (req, res) => {
   if (!model || !userMessage) return res.status(400).json({ error: 'Thiếu model hoặc userMessage.' });
 
   const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  
+  const tools = [{
+    functionDeclarations: [{
+      name: "fetch_json",
+      description: "Thực hiện gọi API GET request lấy dữ liệu JSON hoặc Text từ mạng Internet bằng một URL hợp lệ. Cực kỳ hữu dụng để lấy giá cả, thời tiết, chứng khoán, thông tin realtime...",
+      parameters: { type: "object", properties: { url: { type: "string", description: "API URL cần gọi" } }, required: ["url"] }
+    }]
+  }];
+
+  const contents = [{ role: 'user', parts: [{ text: userMessage }] }];
+
   try {
-    const geminiRes = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction || '' }] },
-        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        generationConfig: generationConfig || { temperature: 0.7, maxOutputTokens: 1024 },
-      }),
-    });
-    const data = await geminiRes.json();
-    if (!geminiRes.ok) return res.status(geminiRes.status).json({ error: data?.error?.message || 'Gemini error' });
+    const makeRequest = async (currentContents) => {
+      const resp = await fetch(geminiUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction || '' }] },
+          contents: currentContents,
+          tools,
+          generationConfig: generationConfig || { temperature: 0.7, maxOutputTokens: 1024 },
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data?.error?.message || 'Gemini error');
+      return data;
+    };
+
+    let data = await makeRequest(contents);
+    const candidateParts = data?.candidates?.[0]?.content?.parts || [];
+    
+    // Check if Gemini invoked a function call
+    if (candidateParts.length > 0 && candidateParts[0].functionCall) {
+      const fc = candidateParts[0].functionCall;
+      if (fc.name === 'fetch_json' && fc.args?.url) {
+        console.log('[System] Gemini đang Function Calling URL:', fc.args.url);
+        let apiResult = "";
+        try {
+          const apiRes = await fetch(fc.args.url, { headers: { 'Accept': 'application/json' }});
+          apiResult = await apiRes.text();
+          if (apiResult.length > 3000) apiResult = apiResult.substring(0, 3000) + '... (truncated)';
+        } catch (e) {
+          apiResult = "Lỗi khi gọi API: " + e.message;
+        }
+
+        contents.push({ role: 'model', parts: [{ functionCall: fc }] });
+        contents.push({
+          role: 'user', // Gemini functionResponse must technically have user or functional role, standard is 'function' (wait, v1beta allows role: 'user' with functionResponse or role: 'function' (no wait, 'function' role specifically)
+          // actually standard structure for function response:
+          role: 'function',
+          parts: [{ functionResponse: { name: fc.name, response: { result: apiResult } } }]
+        });
+        
+        // Execute second turn with injected data
+        data = await makeRequest(contents);
+      }
+    }
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });

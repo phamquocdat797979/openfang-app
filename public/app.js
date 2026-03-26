@@ -220,7 +220,55 @@ function openNewSkillModal() {
   document.getElementById('skillExampleInput').value = '';
   document.getElementById('skillPromptInput').value = '';
   document.getElementById('skillTriggersInput').value = '';
+  document.getElementById('skillTestMessage').value = '';
+  document.getElementById('skillTestResult').style.display = 'none';
+  document.getElementById('skillTestResult').innerHTML = '';
+  document.getElementById('createSkillBtn').disabled = true;
+  document.getElementById('createSkillBtn').style.opacity = '0.5';
+  document.getElementById('createSkillBtn').style.cursor = 'not-allowed';
+  
   openModal('newSkillModal');
+}
+
+async function runSkillTest() {
+  const name = document.getElementById('skillNameInput').value.trim();
+  const desc = document.getElementById('skillDescInput').value.trim();
+  const promptText = document.getElementById('skillPromptInput').value.trim();
+  const userMsg = document.getElementById('skillTestMessage').value.trim();
+  const resultDiv = document.getElementById('skillTestResult');
+  
+  if (!userMsg) { showToast('Vui lòng nhập câu báo test!', 'error'); return; }
+  
+  const finalPrompt = promptText || `Skill của bạn: ${name || 'Chưa đặt tên'}. Nhiệm vụ: ${desc || 'Chưa có mô tả'}.`;
+  
+  resultDiv.style.display = 'block';
+  resultDiv.style.color = 'var(--text-secondary)';
+  resultDiv.innerHTML = '<span style="color:var(--blue)">Đang chạy Test trên Server... Xin chờ! (Có thể có Function Call)</span>';
+  
+  try {
+    const res = await apiPost('/api/gemini', {
+      model: 'gemini-2.5-flash',
+      systemInstruction: finalPrompt,
+      userMessage: userMsg
+    });
+    
+    if (res.error) throw new Error(res.error);
+    
+    const reply = res.candidates?.[0]?.content?.parts?.[0]?.text || "Không có nội dung trả về.";
+    resultDiv.innerHTML = `<span style="color:var(--green);font-weight:bold;">✅ TEST THÀNH CÔNG!</span>\n\nMô hình trả về:\n${reply}`;
+    resultDiv.style.color = 'var(--text-primary)';
+    
+    // Unlock create button
+    document.getElementById('createSkillBtn').disabled = false;
+    document.getElementById('createSkillBtn').style.opacity = '1';
+    document.getElementById('createSkillBtn').style.cursor = 'pointer';
+    showToast('Test thành công, hãy bấm Thêm Skill để lưu lại!', 'success');
+  } catch (err) {
+    resultDiv.innerHTML = `<span style="color:var(--red);font-weight:bold;">❌ TEST THẤT BẠI:</span>\n\n${err.message}`;
+    document.getElementById('createSkillBtn').disabled = true;
+    document.getElementById('createSkillBtn').style.opacity = '0.5';
+    document.getElementById('createSkillBtn').style.cursor = 'not-allowed';
+  }
 }
 
 async function createSkill() {
