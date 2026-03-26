@@ -623,13 +623,58 @@ function renderSessionsPage() {
 
 // ===== MEMORY PAGE =====
 function renderMemoryPage() {
-  const container = document.getElementById('memoryContainer');
-  if (!container) return;
-  if (state.sharedMemory.length === 0) {
-    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">Chưa có hoạt động nào trong Shared Memory.</div>';
+  const agentList = document.getElementById('memoryAgentList');
+  const logsView = document.getElementById('memoryLogsView');
+  const subtitle = document.getElementById('memorySubtitle');
+  if (!agentList || !logsView || !subtitle) return;
+
+  agentList.style.display = 'grid'; // .agents-list uses grid by default in CSS
+  logsView.style.display = 'none';
+  subtitle.style.display = 'block';
+
+  if (state.agents.length === 0) {
+    agentList.innerHTML = '<div class="placeholder-content" style="grid-column:1/-1"><p>Chưa có agent nào</p></div>';
     return;
   }
-  container.innerHTML = [...state.sharedMemory].reverse().map(m => {
+
+  agentList.innerHTML = state.agents.map(agent => {
+    const entryCount = state.sharedMemory.filter(m => m.agentId === agent.id).length;
+    return `
+    <div class="agent-item" onclick="showAgentMemory('${agent.id}')">
+      <div class="agent-avatar">${agent.name.charAt(0).toUpperCase()}</div>
+      <div class="agent-info">
+        <div class="agent-name">${agent.name}</div>
+        <div class="agent-model" style="opacity:0.7">${entryCount} lượt hoạt động</div>
+      </div>
+      <button class="agent-settings-btn" style="pointer-events:none">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function showAgentMemory(agentId) {
+  const agent = state.agents.find(a => a.id === agentId);
+  const agentList = document.getElementById('memoryAgentList');
+  const logsView = document.getElementById('memoryLogsView');
+  const subtitle = document.getElementById('memorySubtitle');
+  const container = document.getElementById('memoryContainer');
+  const title = document.getElementById('memoryLogsTitle');
+  if (!agent || !logsView) return;
+
+  agentList.style.display = 'none';
+  subtitle.style.display = 'none';
+  logsView.style.display = 'flex';
+  title.textContent = `Lịch sử trí nhớ: ${agent.name}`;
+
+  const mems = state.sharedMemory.filter(m => m.agentId === agentId);
+
+  if (mems.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">Agent này chưa có hoạt động nào trong Shared Memory.</div>';
+    return;
+  }
+  
+  container.innerHTML = [...mems].reverse().map(m => {
     const time = new Date(m.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     let typeColor = m.type === 'agent_created' ? 'var(--accent)' :
                     m.type === 'skill_used' ? '#4F8EF7' : 

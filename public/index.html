@@ -179,9 +179,20 @@
     <!-- ===== MEMORY PAGE ===== -->
     <div class="page" id="page-memory">
       <div class="page-header"><h1 class="page-title">Shared Memory</h1></div>
-      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Lịch sử hoạt động chung của toàn hệ thống giúp các Agent chia sẻ thông tin với nhau.</p>
-      <div class="logs-container" id="memoryContainer">
-        <!-- Memory list renders here -->
+      <p id="memorySubtitle" style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Chọn một Agent để xem lịch sử hoạt động và trí nhớ.</p>
+      
+      <div class="agents-list" id="memoryAgentList"></div>
+
+      <div id="memoryLogsView" style="display:none; flex-direction:column; height: calc(100vh - 150px);">
+        <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+          <button class="back-btn" onclick="renderMemoryPage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span style="font-weight:600; font-size: 16px;" id="memoryLogsTitle"></span>
+        </div>
+        <div class="logs-container" id="memoryContainer" style="flex:1;">
+          <!-- Memory list renders here -->
+        </div>
       </div>
     </div>
 
