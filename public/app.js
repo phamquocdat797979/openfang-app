@@ -161,6 +161,7 @@ function navigateTo(page) {
   if (navEl) navEl.classList.add('active');
   if (page === 'overview') updateOverviewPage();
   if (page === 'sessions') renderSessionsPage();
+  if (page === 'memory') renderMemoryPage();
   if (page === 'logs') renderLogsPage();
   if (page === 'skills') renderSkillsPage();
 }
@@ -541,7 +542,6 @@ function openAgentDetail(agentId) {
   document.getElementById('chatWithAgentBtn').onclick = () => { closeModal('agentDetailModal'); openChatWithAgent(agentId); };
 
   const skillNames = getSkillNames(agent.skillIds);
-  const otherAgentMemory = getSharedMemoryForAgent(agentId).slice(-10);
   const catColors = { GENERAL: '#FF6B35', DEVELOPMENT: '#4F8EF7', RESEARCH: '#9B59B6', WRITING: '#2ECC71', BUSINESS: '#F39C12' };
   const catColor = catColors[agent.category?.toUpperCase()] || '#8b91a8';
 
@@ -556,16 +556,6 @@ function openAgentDetail(agentId) {
     <div class="detail-skills-section">
       <div class="section-title">SKILLS (${agent.skillIds.length})</div>
       <div class="detail-skills-list">${skillNames.map(n => `<span class="detail-skill-tag">${n}</span>`).join('')}</div>
-    </div>
-    <div class="memory-section">
-      <div class="section-title">SHARED MEMORY — AGENT KHÁC ĐÃ LÀM GÌ</div>
-      ${otherAgentMemory.length === 0
-        ? '<div class="memory-entry" style="color:var(--text-muted)">Chưa có hoạt động từ agent khác.</div>'
-        : `<div class="memory-list">${otherAgentMemory.map(m => {
-            const time = new Date(m.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            return `<div class="memory-entry"><strong>[${time}] ${m.agentName}:</strong> ${m.content}</div>`;
-          }).join('')}</div>`
-      }
     </div>
     <div class="memory-section" style="margin-top:12px">
       <div class="section-title">NGÀY TẠO</div>
@@ -629,6 +619,32 @@ function renderSessionsPage() {
       <div class="session-msgs">${agent.messageCount || agent.messages?.length || 0} tin nhắn</div>
       <span class="badge badge-${agent.status}">${agent.status.toUpperCase()}</span>
     </div>`).join('');
+}
+
+// ===== MEMORY PAGE =====
+function renderMemoryPage() {
+  const container = document.getElementById('memoryContainer');
+  if (!container) return;
+  if (state.sharedMemory.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px">Chưa có hoạt động nào trong Shared Memory.</div>';
+    return;
+  }
+  container.innerHTML = [...state.sharedMemory].reverse().map(m => {
+    const time = new Date(m.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    let typeColor = m.type === 'agent_created' ? 'var(--accent)' :
+                    m.type === 'skill_used' ? '#4F8EF7' : 
+                    m.type === 'request_refused' ? '#F39C12' : '#8b91a8';
+    return `
+      <div class="log-entry" style="margin-bottom:8px;padding:12px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:6px;display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted)">${time}</span>
+          <span style="font-weight:600;font-size:13px">${m.agentName}</span>
+          <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.05);color:${typeColor}">${m.type.toUpperCase()}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-primary)">${m.content}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ===== LOGS =====
