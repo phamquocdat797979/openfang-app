@@ -267,6 +267,14 @@ async function createAgent() {
   const selectedSkillIds = getSelectedSkillIds();
 
   if (!name) { showToast('Vui lòng nhập tên agent!', 'error'); return; }
+  
+  // Kiểm tra trùng tên agent
+  const isDuplicate = state.agents.some(a => a.name.toLowerCase() === name.toLowerCase());
+  if (isDuplicate) {
+    showToast(`Tên agent "${name}" đã tồn tại! Vui lòng chọn tên khác.`, 'error');
+    return;
+  }
+
   if (selectedSkillIds.length === 0) {
     document.getElementById('skillsError').style.display = 'block';
     showToast('Bắt buộc phải chọn ít nhất 1 skill!', 'error'); return;
