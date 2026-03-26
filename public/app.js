@@ -83,8 +83,9 @@ ${skillsText}
 2. Nếu yêu cầu KHÔNG liên quan đến bất kỳ skill nào, từ chối lịch sự và liệt kê skills.
 3. Khi từ chối: "⛔ Xin lỗi, tôi là **${agent.name}** và chỉ có thể thực hiện: [danh sách skills]. Bạn hãy thử lại! 😊"
 4. Trả lời bằng tiếng Việt trừ khi người dùng hỏi tiếng Anh.
-5. Nếu người dùng hỏi agent khác đã làm gì, báo cáo thông tin từ Shared Memory bên dưới.
-6. KHÔNG trả lời câu hỏi chung chung, thời tiết, kiến thức tổng hợp ngoài skills.${memoryText}`;
+5. CHỈ KHI người dùng nhắc chính xác TÊN của một agent khác (ví dụ: "Agent A đã làm gì?"), bạn mới được tra cứu Shared Memory và báo cáo hoạt động của riêng agent đó.
+6. Nếu người dùng hỏi dò (ví dụ: "ai vừa làm gì", "các agent khác"), hãy TỪ CHỐI tiết lộ thông tin. Bạn phải yêu cầu họ cung cấp đúng tên Agent cần kiểm tra.
+7. KHÔNG trả lời câu hỏi chung chung ngoài skills.${memoryText}`;
 }
 
 // ===== INIT — Load từ SQLite =====
@@ -486,9 +487,13 @@ async function processAgentResponse(userInput, userMsg) {
       detectedSkillName = skill.name; break;
     }
   }
-  const isMemoryQuery = ['agent khác', 'agent kia', 'agent 1', 'agent 2', 'shared memory',
-    'làm gì', 'đã làm', 'hoạt động', 'lịch sử', 'memory', 'other agent', 'báo cáo']
-    .some(kw => lowerInput.includes(kw));
+
+  // Lấy tên các agent khác để kiểm tra xem user có hỏi đích danh ai không
+  const otherAgentNames = state.agents
+    .filter(a => a.id !== agent.id)
+    .map(a => a.name.toLowerCase());
+  
+  const isMemoryQuery = otherAgentNames.length > 0 && otherAgentNames.some(name => lowerInput.includes(name));
 
   const response = await callGeminiAPI(systemPrompt, userInput, agent.model);
   document.getElementById('typingIndicator')?.remove();
