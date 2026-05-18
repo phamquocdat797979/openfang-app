@@ -243,3 +243,5 @@ app.listen(PORT, () => {
   console.log(`   Gemini API Key: ${process.env.GEMINI_API_KEY ? '✓ Đã cấu hình' : '✗ CHƯA cấu hình!'}`);
   console.log(`   SQLite DB: ${process.env.DB_PATH || 'openfang.db (local)'}\n`);
 });
+
+module.exports = app;
